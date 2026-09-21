@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>ClimateGuard</title>
+
+</head>
+
+
+<body>
+
+    <h1>🌍 ClimateGuard</h1>
+
+    <h2>Detect Your Location</h2>
+
+
+    <button onclick="getLocation()">
+
+        📍 Get My Current Location
+
+    </button>
+
+
+    <p id="status">
+
+        Click the button to detect your location.
+
+    </p>
+
+
+    <script>
+
+
+        // ==========================================
+        // DISPLAY NATURAL EVENTS
+        // ==========================================
+
+        function getNaturalEventText(events) {
+
+
+            if (events.length === 0) {
+
+                return "No nearby natural hazards detected.";
+
+            }
+
+
+            let text = "";
+
+
+            events.forEach(function(event) {
+
+
+                text +=
+
+                    "🚨 " +
+                    event.event +
+
+                    "<br>" +
+
+                    "Category: " +
+                    event.category +
+
+                    "<br>" +
+
+                    "Distance: " +
+                    event.distance_km +
+                    " km" +
+
+                    "<br>" +
+
+                    "Impact Radius: " +
+                    event.impact_radius_km +
+                    " km" +
+
+                    "<br>" +
+
+                    "Risk: <b>" +
+                    event.risk +
+                    "</b>" +
+
+                    "<br>" +
+
+                    "Person At Risk: <b>YES</b>" +
+
+                    "<br><br>";
+
+            });
+
+
+            return text;
+
+        }
+
+
+
+        // ==========================================
+        // GET CURRENT LOCATION
+        // ==========================================
+
+        function getLocation() {
+
+
+            const status =
+                document.getElementById("status");
+
+
+            // Check browser support
+
+            if (!navigator.geolocation) {
+
+                status.innerHTML =
+                    "❌ Geolocation is not supported by your browser.";
+
+                return;
+
+            }
+
+
+            // Loading message
+
+            status.innerHTML =
+                "📍 Detecting your location...";
+
+
+            // Get device location
+
+            navigator.geolocation.getCurrentPosition(
+
+
+                function(position) {
+
+
+                    const latitude =
+                        position.coords.latitude;
+
+
+                    const longitude =
+                        position.coords.longitude;
+
+
+                    const accuracy =
+                        position.coords.accuracy;
+
+
+                    // Show detected location
+
+                    status.innerHTML =
+
+                        "📍 Location detected!" +
+
+                        "<br><br>" +
+
+                        "Latitude: " +
+                        latitude +
+
+                        "<br>" +
+
+                        "Longitude: " +
+                        longitude +
+
+                        "<br>" +
+
+                        "Accuracy: " +
+                        accuracy +
+                        " meters" +
+
+                        "<br><br>" +
+
+                        "🔍 Analyzing hazards..." ;
+
+
+                    // ==========================================
+                    // SEND LOCATION TO FLASK
+                    // ==========================================
+
+                    fetch(
+                        "/analyze",
+                        {
+
+                            method: "POST",
+
+                            headers: {
+
+                                "Content-Type":
+                                    "application/json"
+
+                            },
+
+                            body: JSON.stringify({
+
+                                latitude:
+                                    latitude,
+
+                                longitude:
+                                    longitude
+
+                            })
+
+                        }
+                    )
+
+
+                    // Convert response to JSON
+
+                    .then(
+                        response =>
+                            response.json()
+                    )
+
+
+                    // ==========================================
+                    // DISPLAY RESULTS
+                    // ==========================================
+
+                    .then(function(data) {
+
+
+                        // ==========================================
+                        // WEATHER
+                        // ==========================================
+
+                        let weatherText = "";
+
+
+                        data.weather_risks.forEach(
+                            function(item) {
+
+                                weatherText +=
+
+                                    item.hazard +
+
+                                    ": " +
+
+                                    item.risk +
+
+                                    "<br>";
+
+                            }
+                        );
+
+
+                        // ==========================================
+                        // AFFECTED AREA
+                        // ==========================================
+
+                        let affectedAreaText =
+
+                            "Center: " +
+
+                            data.affected_area.center_latitude +
+
+                            ", " +
+
+                            data.affected_area.center_longitude +
+
+                            "<br>" +
+
+                            "Radius: " +
+
+                            data.affected_area.radius_km +
+
+                            " km" +
+
+                            "<br>" +
+
+                            "Source: " +
+
+                            data.affected_area.source;
+
+
+                        // ==========================================
+                        // FINAL RESULT
+                        // ==========================================
+
+                        status.innerHTML =
+
+
+                            "✅ <b>ClimateGuard Analysis Complete!</b>" +
+
+                            "<br><br>" +
+
+
+                            // LOCATION
+
+                            "📍 <b>Location</b>" +
+
+                            "<br>" +
+
+                            "Latitude: " +
+
+                            data.latitude +
+
+                            "<br>" +
+
+                            "Longitude: " +
+
+                            data.longitude +
+
+                            "<br><br>" +
+
+
+                            // WEATHER
+
+                            "<b>🌦 Weather Hazards</b>" +
+
+                            "<br>" +
+
+                            weatherText +
+
+                            "<br>" +
+
+
+                            // FLOOD
+
+                            "<b>🌊 Flood</b>" +
+
+                            "<br>" +
+
+                            "Risk: " +
+
+                            data.flood_risk.risk +
+
+                            "<br><br>" +
+
+
+                            // NATURAL EVENTS
+
+                            "<b>🌍 Natural Events</b>" +
+
+                            "<br>" +
+
+                            getNaturalEventText(
+                                data.natural_events
+                            ) +
+
+                            "<br>" +
+
+
+                            // AFFECTED AREA
+
+                            "<b>📐 Affected Area</b>" +
+
+                            "<br>" +
+
+                            affectedAreaText +
+
+                            "<br><br>" +
+
+
+                            // POPULATION
+
+                            "<b>👥 Population At Risk</b>" +
+
+                            "<br>" +
+
+                            "Estimated People in Area: " +
+
+                            "<strong>" +
+
+                            data.population.population +
+
+                            "</strong>" +
+
+                            "<br>" +
+
+                            "Data Year: " +
+
+                            data.population.data_year +
+
+                            "<br><br>" +
+
+
+                            // OVERALL RISK
+
+                            "<b>⚠️ Overall Risk</b>" +
+
+                            "<br>" +
+
+                            "<strong>" +
+
+                            data.overall_risk +
+
+                            "</strong>";
+
+
+                    })
+
+
+                    // ==========================================
+                    // ERROR
+                    // ==========================================
+
+                    .catch(function(error) {
+
+
+                        console.error(error);
+
+
+                        status.innerHTML =
+
+                            "❌ Error while analyzing hazards." +
+
+                            "<br><br>" +
+
+                            "Please check the Flask terminal.";
+
+
+                    });
+
+
+                },
+
+
+                // ==========================================
+                // LOCATION ERROR
+                // ==========================================
+
+                function(error) {
+
+
+                    status.innerHTML =
+
+                        "❌ Location access denied or unavailable.";
+
+
+                }
+
+
+            );
+
+        }
+
+
+    </script>
+
+
+</body>
+
+</html>
