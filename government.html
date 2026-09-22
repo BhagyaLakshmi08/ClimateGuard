@@ -1,0 +1,2116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>ClimateGuard - Government Command Center</title>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+
+            margin: 0;
+
+            font-family: Arial, sans-serif;
+
+            background: #f3f5f4;
+
+            color: #17221a;
+
+        }
+
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        .header {
+
+            height: 70px;
+
+            background: #16351f;
+
+            color: white;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            padding: 0 28px;
+
+        }
+
+
+        .header-left h1 {
+
+            margin: 0;
+
+            font-size: 25px;
+
+        }
+
+
+        .header-left p {
+
+            margin: 4px 0 0;
+
+            font-size: 13px;
+
+            opacity: 0.8;
+
+        }
+
+
+        .back-button {
+
+            background: white;
+
+            color: #16351f;
+
+            border: none;
+
+            padding: 9px 16px;
+
+            border-radius: 7px;
+
+            cursor: pointer;
+
+            font-weight: bold;
+
+        }
+
+
+        /* =========================
+           MAIN CONTAINER
+        ========================= */
+
+        .container {
+
+            max-width: 1400px;
+
+            margin: auto;
+
+            padding: 28px;
+
+        }
+
+
+        .page-title {
+
+            margin-bottom: 22px;
+
+        }
+
+
+        .page-title h2 {
+
+            margin: 0;
+
+            font-size: 28px;
+
+        }
+
+
+        .page-title p {
+
+            margin-top: 7px;
+
+            color: #69736c;
+
+        }
+
+
+        /* =========================
+           SYSTEM STATUS
+        ========================= */
+
+        .system-status {
+
+            background: white;
+
+            border-radius: 12px;
+
+            padding: 15px 20px;
+
+            margin-bottom: 22px;
+
+            box-shadow:
+                0 2px 8px
+                rgba(0,0,0,0.08);
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+        }
+
+
+        .online {
+
+            color: #16803c;
+
+            font-weight: bold;
+
+        }
+
+
+        /* =========================
+           SUMMARY CARDS
+        ========================= */
+
+        .cards {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 18px;
+
+            margin-bottom: 25px;
+
+        }
+
+
+        .card {
+
+            background: white;
+
+            border-radius: 12px;
+
+            padding: 22px;
+
+            box-shadow:
+                0 2px 8px
+                rgba(0,0,0,0.08);
+
+        }
+
+
+        .card-label {
+
+            font-size: 13px;
+
+            color: #6b746d;
+
+            margin-bottom: 10px;
+
+        }
+
+
+        .card-value {
+
+            font-size: 28px;
+
+            font-weight: bold;
+
+        }
+
+
+        .card-icon {
+
+            font-size: 24px;
+
+            margin-bottom: 8px;
+
+        }
+
+
+        /* =========================
+           MAIN DASHBOARD
+        ========================= */
+
+        .dashboard {
+
+            display: grid;
+
+            grid-template-columns:
+                1.5fr 1fr;
+
+            gap: 22px;
+
+        }
+
+
+        .panel {
+
+            background: white;
+
+            border-radius: 12px;
+
+            padding: 22px;
+
+            box-shadow:
+                0 2px 8px
+                rgba(0,0,0,0.08);
+
+            margin-bottom: 22px;
+
+        }
+
+
+        .panel h3 {
+
+            margin-top: 0;
+
+            font-size: 19px;
+
+        }
+
+
+        /* =========================
+           INCIDENT
+        ========================= */
+
+        .incident {
+
+            border-left:
+                5px solid #d71920;
+
+            background: #fff7f7;
+
+            padding: 17px;
+
+            border-radius: 8px;
+
+        }
+
+
+        .incident-title {
+
+            font-size: 21px;
+
+            font-weight: bold;
+
+            margin-bottom: 12px;
+
+        }
+
+
+        .incident-row {
+
+            margin: 8px 0;
+
+        }
+
+
+        /* =========================
+           RISK
+        ========================= */
+
+        .risk {
+
+            display: inline-block;
+
+            padding: 6px 12px;
+
+            border-radius: 20px;
+
+            font-weight: bold;
+
+            font-size: 13px;
+
+            background: #dff3e5;
+
+            color: #176b35;
+
+        }
+
+
+        /* =========================
+           QUICK ACTIONS
+        ========================= */
+
+        .action-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                1fr 1fr;
+
+            gap: 12px;
+
+        }
+
+
+        .action-button {
+
+            padding: 15px;
+
+            border: none;
+
+            border-radius: 9px;
+
+            background: #eef3ef;
+
+            cursor: pointer;
+
+            font-weight: bold;
+
+            font-size: 14px;
+
+        }
+
+
+        .action-button:hover {
+
+            background: #dfe9e1;
+
+        }
+
+
+        /* =========================
+           MAP BUTTON
+        ========================= */
+
+        .map-button {
+
+            width: 100%;
+
+            background: #16351f;
+
+            color: white;
+
+            border: none;
+
+            padding: 14px;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            font-size: 15px;
+
+            font-weight: bold;
+
+        }
+
+
+        /* =====================================================
+           RISK MONITORING
+        ===================================================== */
+
+        .risk-monitoring {
+
+            display: none;
+
+            margin-top: 25px;
+
+        }
+
+
+        .region-select {
+
+            width: 100%;
+
+            padding: 13px;
+
+            border: 1px solid #d5ddd7;
+
+            border-radius: 8px;
+
+            font-size: 15px;
+
+            margin-top: 10px;
+
+            margin-bottom: 22px;
+
+            background: white;
+
+        }
+
+
+        .risk-overview {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 15px;
+
+            margin-bottom: 22px;
+
+        }
+
+
+        .risk-box {
+
+            background: #f7faf8;
+
+            border-radius: 10px;
+
+            padding: 20px;
+
+            text-align: center;
+
+            border: 1px solid #e1e8e2;
+
+        }
+
+
+        .risk-box h4 {
+
+            margin: 0 0 12px;
+
+            font-size: 14px;
+
+            color: #667169;
+
+        }
+
+
+        .risk-level {
+
+            font-size: 22px;
+
+            font-weight: bold;
+
+        }
+
+
+        .high {
+
+            color: #c62828;
+
+        }
+
+
+        .medium {
+
+            color: #d88900;
+
+        }
+
+
+        .low {
+
+            color: #16803c;
+
+        }
+
+
+        /* =========================
+           MONITORING STATISTICS
+        ========================= */
+
+        .monitor-stats {
+
+            display: grid;
+
+            grid-template-columns:
+                1fr 1fr;
+
+            gap: 15px;
+
+            margin-bottom: 25px;
+
+        }
+
+
+        .monitor-stat {
+
+            background: #eef3ef;
+
+            padding: 20px;
+
+            border-radius: 10px;
+
+        }
+
+
+        .monitor-stat span {
+
+            display: block;
+
+            color: #667169;
+
+            font-size: 13px;
+
+            margin-bottom: 7px;
+
+        }
+
+
+        .monitor-stat strong {
+
+            font-size: 24px;
+
+        }
+
+
+        /* =========================
+           RISK TABLE
+        ========================= */
+
+        .table-container {
+
+            width: 100%;
+
+            overflow-x: auto;
+
+        }
+
+
+        .risk-table {
+
+            width: 100%;
+
+            border-collapse: collapse;
+
+            min-width: 650px;
+
+        }
+
+
+        .risk-table th {
+
+            background: #16351f;
+
+            color: white;
+
+            padding: 13px;
+
+            text-align: left;
+
+            font-size: 13px;
+
+        }
+
+
+        .risk-table td {
+
+            padding: 13px;
+
+            border-bottom:
+                1px solid #e5e9e6;
+
+            font-size: 14px;
+
+        }
+
+
+        .risk-table tr:hover {
+
+            background: #f7faf8;
+
+        }
+
+
+        .risk-badge {
+
+            display: inline-block;
+
+            padding: 5px 10px;
+
+            border-radius: 15px;
+
+            font-size: 12px;
+
+            font-weight: bold;
+
+        }
+
+
+        .risk-high {
+
+            background: #fde3e3;
+
+            color: #b71c1c;
+
+        }
+
+
+        .risk-medium {
+
+            background: #fff0d5;
+
+            color: #a86100;
+
+        }
+
+
+        .risk-low {
+
+            background: #dff3e5;
+
+            color: #176b35;
+
+        }
+
+
+        .close-monitor {
+
+            margin-top: 22px;
+
+            background: #16351f;
+
+            color: white;
+
+            border: none;
+
+            padding: 12px 18px;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            font-weight: bold;
+
+        }
+
+
+        .close-monitor:hover {
+
+            background: #24522f;
+
+        }
+
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
+        @media(max-width: 900px) {
+
+            .cards {
+
+                grid-template-columns:
+                    1fr 1fr;
+
+            }
+
+
+            .dashboard {
+
+                grid-template-columns:
+                    1fr;
+
+            }
+
+
+            .risk-overview {
+
+                grid-template-columns:
+                    1fr 1fr;
+
+            }
+
+        }
+
+
+        @media(max-width: 550px) {
+
+            .cards {
+
+                grid-template-columns:
+                    1fr;
+
+            }
+
+
+            .action-grid {
+
+                grid-template-columns:
+                    1fr;
+
+            }
+
+
+            .risk-overview {
+
+                grid-template-columns:
+                    1fr;
+
+            }
+
+
+            .monitor-stats {
+
+                grid-template-columns:
+                    1fr;
+
+            }
+
+
+            .header {
+
+                padding: 0 15px;
+
+            }
+
+
+            .header-left h1 {
+
+                font-size: 20px;
+
+            }
+
+
+            .container {
+
+                padding: 18px;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- =========================
+         HEADER
+    ========================= -->
+
+    <div class="header">
+
+
+        <div class="header-left">
+
+            <h1>
+                🏛️ ClimateGuard
+            </h1>
+
+            <p>
+                Government Emergency Command Center
+            </p>
+
+        </div>
+
+
+        <button
+            class="back-button"
+            onclick="goBack()">
+
+            ← Back
+
+        </button>
+
+
+    </div>
+
+
+
+    <!-- =========================
+         MAIN
+    ========================= -->
+
+    <div class="container">
+
+
+        <div class="page-title">
+
+            <h2>
+                Emergency Situation Dashboard
+            </h2>
+
+            <p>
+                Monitor hazards and coordinate emergency response.
+            </p>
+
+        </div>
+
+
+
+        <!-- =========================
+             SYSTEM STATUS
+        ========================= -->
+
+        <div class="system-status">
+
+            <div>
+
+                🟢 System Status:
+
+                <span class="online">
+                    ONLINE
+                </span>
+
+            </div>
+
+
+            <div>
+
+                Last Updated:
+
+                <strong id="time">
+                    --
+                </strong>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =========================
+             SUMMARY CARDS
+        ========================= -->
+
+        <div class="cards">
+
+
+            <div class="card">
+
+                <div class="card-icon">
+                    🚨
+                </div>
+
+                <div class="card-label">
+                    ACTIVE HAZARDS
+                </div>
+
+                <div class="card-value" id="activeHazards">
+                    0
+                </div>
+
+            </div>
+
+
+
+            <div class="card">
+
+                <div class="card-icon">
+                    ⚠️
+                </div>
+
+                <div class="card-label">
+                    HIGH RISK AREAS
+                </div>
+
+                <div class="card-value" id="highRiskAreas">
+                    0
+                </div>
+
+            </div>
+
+
+
+            <div class="card">
+
+                <div class="card-icon">
+                    👥
+                </div>
+
+                <div class="card-label">
+                    PEOPLE AT RISK
+                </div>
+
+                <div class="card-value" id="peopleAtRisk">
+                    0
+                </div>
+
+            </div>
+
+
+
+            <div class="card">
+
+                <div class="card-icon">
+                    🏠
+                </div>
+
+                <div class="card-label">
+                    SHELTERS
+                </div>
+
+                <div class="card-value" id="shelters">
+                    0
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- =========================
+             MAIN DASHBOARD
+        ========================= -->
+
+        <div class="dashboard" id="mainDashboard">
+
+
+            <!-- =====================
+                 LEFT
+            ====================== -->
+
+            <div>
+
+
+                <div class="panel">
+
+                    <h3>
+                        🚨 Active Incident
+                    </h3>
+
+
+                    <div class="incident">
+
+
+                        <div class="incident-title" id="incidentTitle">
+
+                            No Active Incident
+
+                        </div>
+
+
+                        <div class="incident-row">
+
+                            <b>Hazard:</b>
+
+                            <span id="incidentHazard">Waiting for analysis</span>
+
+                        </div>
+
+
+                        <div class="incident-row">
+
+                            <b>Region:</b>
+
+                            <span id="incidentRegion">--</span>
+
+                        </div>
+
+
+                        <div class="incident-row">
+
+                            <b>Affected Radius:</b>
+
+                            <span id="incidentRadius">--</span>
+
+                        </div>
+
+
+                        <div class="incident-row">
+
+                            <b>People at Risk:</b>
+
+                            <span id="incidentPeople">--</span>
+
+                        </div>
+
+
+                        <br>
+
+
+                        <span class="risk">
+
+                            SYSTEM READY
+
+                        </span>
+
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="panel">
+
+                    <h3>
+                        ⚡ Quick Actions
+                    </h3>
+
+
+                    <div class="action-grid">
+
+
+                        <button
+                            class="action-button">
+
+                            🚨 Issue Alert
+
+                        </button>
+
+
+                        <button
+                            class="action-button">
+
+                            🚒 Deploy Response
+
+                        </button>
+
+
+                        <button
+                            class="action-button">
+
+                            🏠 View Shelters
+
+                        </button>
+
+
+                        <button
+                            class="action-button">
+
+                            🏥 View Hospitals
+
+                        </button>
+
+
+                        <!-- NEW -->
+
+                        <button
+                            class="action-button"
+                            onclick="showRiskMonitoring()">
+
+                            📊 Risk Monitoring
+
+                        </button>
+
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- =====================
+                 RIGHT
+            ====================== -->
+
+            <div>
+
+
+                <div class="panel">
+
+                    <h3>
+                        🗺️ Hazard Monitoring
+                    </h3>
+
+
+                    <p>
+
+                        View the global hazard map to
+                        identify active hazard regions.
+
+                    </p>
+
+
+                    <button
+                        class="map-button"
+                        onclick="openMap()">
+
+                        🌍 Open Global Hazard Map
+
+                    </button>
+
+                </div>
+
+
+
+                <div class="panel">
+
+                    <h3>
+                        🏛️ Department Coordination
+                    </h3>
+
+
+                    <p>
+                        🚒 Fire & Rescue
+                    </p>
+
+
+                    <p>
+                        👮 Police
+                    </p>
+
+
+                    <p>
+                        🏥 Medical / Health
+                    </p>
+
+
+                    <p>
+                        🛣️ Public Works
+                    </p>
+
+
+                    <p>
+                        ⚡ Electricity
+                    </p>
+
+
+                    <p>
+                        🏛️ Disaster Management
+                    </p>
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- =====================================================
+             GOVERNMENT RISK MONITORING
+        ===================================================== -->
+
+        <div
+            class="risk-monitoring"
+            id="riskMonitoring">
+
+
+            <div class="panel">
+
+
+                <h3>
+                    📊 Regional Climate Risk Monitoring
+                </h3>
+
+
+                <p>
+                    Monitor climate hazards and risk levels
+                    across different regions.
+                </p>
+
+
+                <!-- REGION -->
+
+                <label>
+
+                    <b>
+                        Select Region
+                    </b>
+
+                </label>
+
+
+                <select
+                    class="region-select"
+                    id="regionSelect"
+                    onchange="updateRegion()">
+
+
+                    <option value="chennai">
+                        Chennai
+                    </option>
+
+
+                    <option value="coimbatore">
+                        Coimbatore
+                    </option>
+
+
+                    <option value="madurai">
+                        Madurai
+                    </option>
+
+
+                    <option value="tiruchirappalli">
+                        Tiruchirappalli
+                    </option>
+
+
+                </select>
+
+
+
+                <!-- =====================
+                     RISK OVERVIEW
+                ====================== -->
+
+                <div class="risk-overview">
+
+
+                    <div class="risk-box">
+
+                        <h4>
+                            🌊 Flood Risk
+                        </h4>
+
+
+                        <div
+                            class="risk-level high"
+                            id="floodRisk">
+
+                            HIGH
+
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="risk-box">
+
+                        <h4>
+                            🌡️ Heat Risk
+                        </h4>
+
+
+                        <div
+                            class="risk-level medium"
+                            id="heatRisk">
+
+                            MEDIUM
+
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="risk-box">
+
+                        <h4>
+                            🌀 Cyclone Risk
+                        </h4>
+
+
+                        <div
+                            class="risk-level low"
+                            id="cycloneRisk">
+
+                            LOW
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- =====================
+                     STATISTICS
+                ====================== -->
+
+                <div class="monitor-stats">
+
+
+                    <div class="monitor-stat">
+
+                        <span>
+                            👥 People at Risk
+                        </span>
+
+
+                        <strong id="peopleRisk">
+
+                            120,000
+
+                        </strong>
+
+                    </div>
+
+
+
+                    <div class="monitor-stat">
+
+                        <span>
+                            🏗️ Infrastructure at Risk
+                        </span>
+
+
+                        <strong id="infrastructureRisk">
+
+                            240
+
+                        </strong>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- =====================
+                     REGIONAL TABLE
+                ====================== -->
+
+                <h3>
+                    🗺️ Regional Risk Overview
+                </h3>
+
+
+                <div class="table-container">
+
+
+                    <table class="risk-table">
+
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Region
+                                </th>
+
+                                <th>
+                                    Flood
+                                </th>
+
+                                <th>
+                                    Heat
+                                </th>
+
+                                <th>
+                                    Cyclone
+                                </th>
+
+                                <th>
+                                    Overall Risk
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+
+                            <tr>
+
+                                <td>
+                                    Chennai
+                                </td>
+
+                                <td>
+
+                                    <span
+                                        class="risk-badge risk-high">
+
+                                        HIGH
+
+                                    </span>
+
+                                </td>
+
+                                <td>
+
+                                    <span
+                                        class="risk-badge risk-medium">
+
+                                        MEDIUM
+
+                                    </span>
+
+                                </td>
+
+                                <td>
+
+                                    <span
+                                        class="risk-badge risk-low">
+
+                                        LOW
+
+                                    </span>
+
+                                </td>
+
+                                <td>
+
+                                    <span
+                                        class="risk-badge risk-high">
+
+                                        HIGH
+
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+
+
+                            <tr>
+
+                                <td>
+                                    Coimbatore
+                                </td>
+
+                                <td>
+
+                                    <span
+                                        class="risk-badge risk-low">
+
+                                        LOW
+
+                                    </span>
+
+                                </td>
+
+                                <td>
+
+                                    <span
+                                        class="risk-badge risk-high">
+
+                                        HIGH
+
+                                    </span>
+
+                                </td>
+
+                                <td>
+
+                                    <span
+                                        class="risk-badge risk-low">
+
+                                        LOW
+
+                                    </span>
+
+                                </td>
+
+                                <td>
+
+                                    <span
+                                        class="risk-badge risk-medium">
+
+                                        MEDIUM
+
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+
+
+                            <tr>
+
+                                <td>
+                                    Madurai
+                                </td>
+
+                                <td>
+
+                                    <span
+                                        class="risk-badge risk-medium">
+
+                                        MEDIUM
+
+                                    </span>
+
+                                </td>
+
+                                <td>
+
+                                    <span
+                                        class="risk-badge risk-high">
+
+                                        HIGH
+
+                                    </span>
+
+                                </td>
+
+                                <td>
+
+                                    <span
+                                        class="risk-badge risk-low">
+
+                                        LOW
+
+                                    </span>
+
+                                </td>
+
+                                <td>
+
+                                    <span
+                                        class="risk-badge risk-high">
+
+                                        HIGH
+
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+
+
+                            <tr>
+
+                                <td>
+                                    Tiruchirappalli
+                                </td>
+
+                                <td>
+
+                                    <span
+                                        class="risk-badge risk-medium">
+
+                                        MEDIUM
+
+                                    </span>
+
+                                </td>
+
+                                <td>
+
+                                    <span
+                                        class="risk-badge risk-medium">
+
+                                        MEDIUM
+
+                                    </span>
+
+                                </td>
+
+                                <td>
+
+                                    <span
+                                        class="risk-badge risk-low">
+
+                                        LOW
+
+                                    </span>
+
+                                </td>
+
+                                <td>
+
+                                    <span
+                                        class="risk-badge risk-medium">
+
+                                        MEDIUM
+
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+
+                        </tbody>
+
+
+                    </table>
+
+
+                </div>
+
+
+
+                <button
+                    class="close-monitor"
+                    onclick="closeRiskMonitoring()">
+
+                    ← Back to Dashboard
+
+                </button>
+
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =========================
+         JAVASCRIPT
+    ========================= -->
+
+    <script>
+
+
+        /* =========================
+           TIME
+        ========================= */
+
+        function updateTime() {
+
+            document.getElementById(
+                "time"
+            ).textContent =
+                new Date().toLocaleTimeString();
+
+        }
+
+
+        updateTime();
+
+
+        setInterval(
+            updateTime,
+            1000
+        );
+
+
+
+        /* =========================
+           OPEN MAP
+        ========================= */
+
+        function openMap() {
+
+            window.location.href =
+                "/map?mode=government";
+
+        }
+
+
+
+        /* =========================
+           BACK
+        ========================= */
+
+        function goBack() {
+
+            window.location.href =
+                "/";
+
+        }
+
+
+
+        /* =========================
+           SHOW RISK MONITORING
+        ========================= */
+
+        function showRiskMonitoring() {
+
+            document.getElementById(
+                "mainDashboard"
+            ).style.display = "none";
+
+
+            document.getElementById(
+                "riskMonitoring"
+            ).style.display = "block";
+
+
+            window.scrollTo({
+
+                top: 0,
+
+                behavior: "smooth"
+
+            });
+
+        }
+
+
+
+        /* =========================
+           CLOSE RISK MONITORING
+        ========================= */
+
+        function closeRiskMonitoring() {
+
+            document.getElementById(
+                "riskMonitoring"
+            ).style.display = "none";
+
+
+            document.getElementById(
+                "mainDashboard"
+            ).style.display = "grid";
+
+
+            window.scrollTo({
+
+                top: 0,
+
+                behavior: "smooth"
+
+            });
+
+        }
+
+
+
+        /* =========================
+           REGION DATA
+        ========================= */
+
+        const regionData = {
+
+
+            chennai: {
+
+                flood: "HIGH",
+
+                heat: "MEDIUM",
+
+                cyclone: "LOW",
+
+                people: "120,000",
+
+                infrastructure: "240"
+
+            },
+
+
+            coimbatore: {
+
+                flood: "LOW",
+
+                heat: "HIGH",
+
+                cyclone: "LOW",
+
+                people: "65,000",
+
+                infrastructure: "130"
+
+            },
+
+
+            madurai: {
+
+                flood: "MEDIUM",
+
+                heat: "HIGH",
+
+                cyclone: "LOW",
+
+                people: "80,000",
+
+                infrastructure: "175"
+
+            },
+
+
+            tiruchirappalli: {
+
+                flood: "MEDIUM",
+
+                heat: "MEDIUM",
+
+                cyclone: "LOW",
+
+                people: "55,000",
+
+                infrastructure: "110"
+
+            }
+
+        };
+
+
+
+        /* =========================
+           UPDATE REGION
+        ========================= */
+
+        function updateRegion() {
+
+
+            const region =
+                document.getElementById(
+                    "regionSelect"
+                ).value;
+
+
+            const data =
+                regionData[region];
+
+
+            document.getElementById(
+                "floodRisk"
+            ).textContent =
+                data.flood;
+
+
+            document.getElementById(
+                "heatRisk"
+            ).textContent =
+                data.heat;
+
+
+            document.getElementById(
+                "cycloneRisk"
+            ).textContent =
+                data.cyclone;
+
+
+            document.getElementById(
+                "peopleRisk"
+            ).textContent =
+                data.people;
+
+
+            document.getElementById(
+                "infrastructureRisk"
+            ).textContent =
+                data.infrastructure;
+
+
+            /*
+             * Update risk colors
+             */
+
+            updateRiskColor(
+                "floodRisk",
+                data.flood
+            );
+
+
+            updateRiskColor(
+                "heatRisk",
+                data.heat
+            );
+
+
+            updateRiskColor(
+                "cycloneRisk",
+                data.cyclone
+            );
+
+        }
+
+
+
+        /* =========================
+           RISK COLOR
+        ========================= */
+
+        function updateRiskColor(
+            elementId,
+            level
+        ) {
+
+
+            const element =
+                document.getElementById(
+                    elementId
+                );
+
+
+            element.classList.remove(
+                "high",
+                "medium",
+                "low"
+            );
+
+
+            if (level === "HIGH") {
+
+                element.classList.add(
+                    "high"
+                );
+
+            }
+
+            else if (level === "MEDIUM") {
+
+                element.classList.add(
+                    "medium"
+                );
+
+            }
+
+            else {
+
+                element.classList.add(
+                    "low"
+                );
+
+            }
+
+        }
+
+
+        /* =========================
+           LOAD GOVERNMENT DATA
+        ========================= */
+
+        function getRiskLevel(value) {
+
+            if (!value) {
+                return "LOW";
+            }
+
+            if (Array.isArray(value)) {
+
+                const levels = value.map(item =>
+                    String(
+                        item?.risk_level ||
+                        item?.risk ||
+                        item?.level ||
+                        "LOW"
+                    ).toUpperCase()
+                );
+
+                if (levels.includes("HIGH")) return "HIGH";
+                if (levels.includes("MEDIUM")) return "MEDIUM";
+                return "LOW";
+            }
+
+            if (typeof value === "object") {
+                return String(
+                    value.risk_level ||
+                    value.risk ||
+                    value.level ||
+                    "LOW"
+                ).toUpperCase();
+            }
+
+            return String(value).toUpperCase();
+        }
+
+
+        async function loadGovernmentData() {
+
+            try {
+
+                const response = await fetch("/government-data");
+                const result = await response.json();
+
+                if (!result.available || !result.data) {
+                    return;
+                }
+
+                const data = result.data;
+
+                const weatherRisks = data.weather_risks || [];
+                const floodRiskData = data.flood_risk || {};
+                const naturalEvents = data.natural_events || [];
+                const overallRiskData = data.overall_risk || {};
+                const affectedArea = data.affected_area || {};
+                const peopleData = data.people_at_risk || {};
+                const climateRiskData = data.climate_risk || {};
+
+                const weatherRisk = getRiskLevel(weatherRisks);
+                const floodRisk = getRiskLevel(floodRiskData);
+                const overallRisk = getRiskLevel(overallRiskData);
+                const climateRisk = getRiskLevel(climateRiskData);
+
+                /* Active hazards */
+                let activeHazards = 0;
+
+                if (weatherRisk !== "LOW") {
+                    activeHazards++;
+                }
+
+                if (floodRisk !== "LOW") {
+                    activeHazards++;
+                }
+
+                if (Array.isArray(naturalEvents)) {
+                    activeHazards += naturalEvents.length;
+                }
+
+                /* High-risk areas */
+                let highRiskAreas = 0;
+
+                if (weatherRisk === "HIGH") {
+                    highRiskAreas++;
+                }
+
+                if (floodRisk === "HIGH") {
+                    highRiskAreas++;
+                }
+
+                if (overallRisk === "HIGH" || climateRisk === "HIGH") {
+                    highRiskAreas++;
+                }
+
+                /* People at risk */
+                const peopleValue = Number(
+                    peopleData.people_at_risk || 0
+                );
+
+                document.getElementById("activeHazards").textContent =
+                    activeHazards;
+
+                document.getElementById("highRiskAreas").textContent =
+                    highRiskAreas;
+
+                document.getElementById("peopleAtRisk").textContent =
+                    peopleValue.toLocaleString();
+
+                /* Active incident */
+                const hazardName =
+                    affectedArea.hazard ||
+                    "Climate Risk";
+
+                const regionName =
+                    affectedArea.location ||
+                    `Lat ${Number(data.latitude).toFixed(4)}, ` +
+                    `Lon ${Number(data.longitude).toFixed(4)}`;
+
+                const radius = affectedArea.radius_km;
+
+                document.getElementById("incidentTitle").textContent =
+                    activeHazards > 0
+                        ? "Active Climate Incident"
+                        : "No Active Incident";
+
+                document.getElementById("incidentHazard").textContent =
+                    hazardName;
+
+                document.getElementById("incidentRegion").textContent =
+                    regionName;
+
+                document.getElementById("incidentRadius").textContent =
+                    radius !== undefined && radius !== null
+                        ? `${radius} km`
+                        : "--";
+
+                document.getElementById("incidentPeople").textContent =
+                    peopleValue.toLocaleString();
+
+                const statusBadge =
+                    document.querySelector(".incident .risk");
+
+                if (statusBadge) {
+
+                    statusBadge.textContent =
+                        activeHazards > 0
+                            ? `CLIMATE RISK: ${climateRisk}`
+                            : "SYSTEM READY";
+                }
+
+            } catch (error) {
+
+                console.error(
+                    "Government data error:",
+                    error
+                );
+            }
+        }
+
+
+        loadGovernmentData();
+
+        setInterval(
+            loadGovernmentData,
+            10000
+        );
+
+    </script>
+
+
+</body>
+
+</html>
