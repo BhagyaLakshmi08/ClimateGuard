@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 
 from services.weather_service import get_weather
 from services.flood_service import get_flood_data
@@ -11,13 +11,30 @@ from hazards.eonet_hazards import find_nearby_events
 from hazards.hazard_engine import calculate_overall_risk
 from hazards.climate_risk import calculate_climate_risk
 
+from hazards.affected_area import (
+    get_dominant_hazard,
+    get_affected_area
+)
+
+from hazards.exposure import (
+    calculate_people_at_risk
+)
+
 
 app = Flask(__name__)
 
 
-# ==========================================
+# ============================================================
+# LATEST ANALYSIS
+# Used by Government Dashboard
+# ============================================================
+
+latest_analysis = None
+
+
+# ============================================================
 # HOME PAGE
-# ==========================================
+# ============================================================
 
 @app.route("/")
 def home():
@@ -27,15 +44,38 @@ def home():
     )
 
 
-# ==========================================
-# ANALYZE USER LOCATION
-# ==========================================
+# ============================================================
+# GLOBAL / LOCAL HAZARD MAP
+#
+# mode=user        -> Citizen map
+# mode=government  -> Government map
+# ============================================================
+
+@app.route("/map")
+def hazard_map():
+
+    mode = request.args.get(
+        "mode",
+        "user"
+    )
+
+    return render_template(
+        "map.html",
+        mode=mode
+    )
+
+
+# ============================================================
+# CLIMATEGUARD ANALYSIS
+# ============================================================
 
 @app.route(
     "/analyze",
     methods=["POST"]
 )
 def analyze():
+
+    global latest_analysis
 
     data = request.get_json()
 
@@ -58,9 +98,9 @@ def analyze():
     )
 
 
-    # ==========================================
+    # ========================================================
     # WEATHER
-    # ==========================================
+    # ========================================================
 
     print("\nGetting weather data...")
 
@@ -74,9 +114,9 @@ def analyze():
     )
 
 
-    # ==========================================
+    # ========================================================
     # FLOOD
-    # ==========================================
+    # ========================================================
 
     print("Getting flood data...")
 
@@ -90,11 +130,13 @@ def analyze():
     )
 
 
-    # ==========================================
+    # ========================================================
     # NASA NATURAL EVENTS
-    # ==========================================
+    # ========================================================
 
-    print("Getting NASA natural events...")
+    print(
+        "Getting NASA natural events..."
+    )
 
     events_data = get_natural_events()
 
@@ -105,9 +147,9 @@ def analyze():
     )
 
 
-    # ==========================================
+    # ========================================================
     # OVERALL HAZARD RISK
-    # ==========================================
+    # ========================================================
 
     overall_risk = calculate_overall_risk(
         weather_risks,
@@ -116,104 +158,135 @@ def analyze():
     )
 
 
-    # ==========================================
+    # ========================================================
+    # DOMINANT HAZARD
+    # ========================================================
+
+    print(
+        "\nDetermining dominant hazard..."
+    )
+
+    dominant = get_dominant_hazard(
+        weather_risks,
+        flood_risk
+    )
+
+
+    print(
+        "Dominant Hazard:",
+        dominant["hazard"]
+    )
+
+    print(
+        "Dominant Risk:",
+        dominant["risk"]
+    )
+
+
+    # ========================================================
     # AFFECTED AREA
-    # ==========================================
+    # ========================================================
 
-    print("\nDetermining affected area...")
-
-
-    if natural_events:
-
-        affected_radius = natural_events[0][
-            "impact_radius_km"
-        ]
-
-        affected_center_latitude = (
-            natural_events[0][
-                "event_latitude"
-            ]
-        )
-
-        affected_center_longitude = (
-            natural_events[0][
-                "event_longitude"
-            ]
-        )
-
-        affected_source = (
-            "Nearby natural event"
-        )
-
-
-    else:
-
-        if overall_risk == "EXTREME":
-
-            affected_radius = 50
-
-        elif overall_risk == "HIGH":
-
-            affected_radius = 25
-
-        elif overall_risk == "MODERATE":
-
-            affected_radius = 10
-
-        else:
-
-            affected_radius = 5
-
-
-        affected_center_latitude = latitude
-
-        affected_center_longitude = longitude
-
-        affected_source = (
-            "Prototype risk-based estimate"
-        )
+    affected_area = get_affected_area(
+        latitude,
+        longitude,
+        dominant["hazard"],
+        dominant["risk"]
+    )
 
 
     print(
         "Affected Radius:",
-        affected_radius,
+        affected_area["radius_km"],
         "km"
     )
 
     print(
         "Affected Area Source:",
-        affected_source
+        affected_area["source"]
     )
 
 
-    # ==========================================
+    # ========================================================
     # POPULATION
-    # ==========================================
+    # ========================================================
 
     print(
-        "Getting population data..."
+        "\nGetting population data..."
     )
-
 
     population_data = get_population_in_area(
 
-        affected_center_latitude,
+        affected_area[
+            "center_latitude"
+        ],
 
-        affected_center_longitude,
+        affected_area[
+            "center_longitude"
+        ],
 
-        affected_radius
+        affected_area[
+            "radius_km"
+        ]
 
     )
 
 
-    # ==========================================
+    print(
+        "Estimated Population:",
+        population_data["population"]
+    )
+
+
+    # ========================================================
+    # PEOPLE AT RISK
+    # ========================================================
+
+    print(
+        "Calculating population exposure..."
+    )
+
+    people_at_risk = calculate_people_at_risk(
+
+        population_data[
+            "population"
+        ],
+
+        affected_area[
+            "hazard"
+        ],
+
+        affected_area[
+            "risk"
+        ]
+
+    )
+
+
+    print(
+        "Exposure Percentage:",
+        people_at_risk[
+            "exposure_percentage"
+        ],
+        "%"
+    )
+
+
+    print(
+        "Estimated People At Risk:",
+        people_at_risk[
+            "people_at_risk"
+        ]
+    )
+
+
+    # ========================================================
     # CLIMATE RISK SCORE
-    # ==========================================
+    # ========================================================
 
     print(
         "Calculating climate risk score..."
     )
-
 
     climate_risk = calculate_climate_risk(
 
@@ -228,9 +301,9 @@ def analyze():
     )
 
 
-    # ==========================================
+    # ========================================================
     # TERMINAL REPORT
-    # ==========================================
+    # ========================================================
 
     print("\n================================")
     print("CLIMATEGUARD MULTI-HAZARD REPORT")
@@ -250,22 +323,26 @@ def analyze():
     print("\n--- Flood ---")
 
     print(
-        f"Flood: {flood_risk['risk']}"
+        f"Flood: "
+        f"{flood_risk['risk']}"
     )
 
 
     print("\n--- Natural Events ---")
+
 
     if natural_events:
 
         for event in natural_events:
 
             print(
-                f"Event: {event['event']}"
+                f"Event: "
+                f"{event['event']}"
             )
 
             print(
-                f"Category: {event['category']}"
+                f"Category: "
+                f"{event['category']}"
             )
 
             print(
@@ -274,7 +351,8 @@ def analyze():
             )
 
             print(
-                f"Risk: {event['risk']}"
+                f"Risk: "
+                f"{event['risk']}"
             )
 
     else:
@@ -287,22 +365,47 @@ def analyze():
     print("\n--- Affected Area ---")
 
     print(
+        "Dominant Hazard:",
+        affected_area["hazard"]
+    )
+
+    print(
+        "Risk:",
+        affected_area["risk"]
+    )
+
+    print(
         "Affected Radius:",
-        affected_radius,
+        affected_area["radius_km"],
         "km"
     )
 
     print(
-        "Affected Area Source:",
-        affected_source
+        "Source:",
+        affected_area["source"]
     )
 
 
-    print("\n--- Population At Risk ---")
+    print("\n--- Population Exposure ---")
 
     print(
-        "Estimated People in Area:",
+        "Estimated Population:",
         population_data["population"]
+    )
+
+    print(
+        "Exposure Percentage:",
+        people_at_risk[
+            "exposure_percentage"
+        ],
+        "%"
+    )
+
+    print(
+        "Estimated People At Risk:",
+        people_at_risk[
+            "people_at_risk"
+        ]
     )
 
     print(
@@ -324,26 +427,6 @@ def analyze():
         climate_risk["risk_level"]
     )
 
-    print(
-        "Weather Contribution:",
-        climate_risk["weather_score"]
-    )
-
-    print(
-        "Flood Contribution:",
-        climate_risk["flood_score"]
-    )
-
-    print(
-        "Natural Event Contribution:",
-        climate_risk["natural_event_score"]
-    )
-
-    print(
-        "Population Contribution:",
-        climate_risk["population_score"]
-    )
-
 
     print("\n--------------------------------")
 
@@ -360,11 +443,51 @@ def analyze():
     print("--------------------------------")
 
 
-    # ==========================================
-    # SEND RESULTS TO BROWSER
-    # ==========================================
+    # ========================================================
+    # SAVE LATEST ANALYSIS
+    # Government Dashboard will use this
+    # ========================================================
 
-    return {
+    latest_analysis = {
+
+        "latitude":
+            latitude,
+
+        "longitude":
+            longitude,
+
+        "weather_risks":
+            weather_risks,
+
+        "flood_risk":
+            flood_risk,
+
+        "natural_events":
+            natural_events,
+
+        "overall_risk":
+            overall_risk,
+
+        "affected_area":
+            affected_area,
+
+        "population":
+            population_data,
+
+        "people_at_risk":
+            people_at_risk,
+
+        "climate_risk":
+            climate_risk
+
+    }
+
+
+    # ========================================================
+    # RETURN DATA TO CITIZEN FRONTEND
+    # ========================================================
+
+    return jsonify({
 
         "latitude":
             latitude,
@@ -387,31 +510,92 @@ def analyze():
         "affected_area": {
 
             "center_latitude":
-                affected_center_latitude,
+                affected_area[
+                    "center_latitude"
+                ],
 
             "center_longitude":
-                affected_center_longitude,
+                affected_area[
+                    "center_longitude"
+                ],
 
             "radius_km":
-                affected_radius,
+                affected_area[
+                    "radius_km"
+                ],
+
+            "hazard":
+                affected_area[
+                    "hazard"
+                ],
+
+            "risk":
+                affected_area[
+                    "risk"
+                ],
 
             "source":
-                affected_source
+                affected_area[
+                    "source"
+                ]
 
         },
 
         "population":
             population_data,
 
+        "people_at_risk":
+            people_at_risk,
+
         "climate_risk":
             climate_risk
 
-    }
+    })
 
 
-# ==========================================
+# ============================================================
+# GOVERNMENT COMMAND CENTER
+# ============================================================
+
+@app.route("/government")
+def government():
+
+    return render_template(
+        "government.html"
+    )
+
+
+# ============================================================
+# GOVERNMENT DASHBOARD DATA
+# ============================================================
+
+@app.route("/government-data")
+def government_data():
+
+    if latest_analysis is None:
+
+        return jsonify({
+
+            "available":
+                False
+
+        })
+
+
+    return jsonify({
+
+        "available":
+            True,
+
+        "data":
+            latest_analysis
+
+    })
+
+
+# ============================================================
 # RUN APPLICATION
-# ==========================================
+# ============================================================
 
 if __name__ == "__main__":
 
