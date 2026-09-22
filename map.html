@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>ClimateGuard - Hazard Map</title>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <!-- Leaflet -->
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+
+            margin: 0;
+
+            font-family: Arial, sans-serif;
+
+        }
+
+
+        /* ==============================
+           HEADER
+        ============================== */
+
+        .header {
+
+            height: 65px;
+
+            background: #16351f;
+
+            color: white;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            padding: 0 20px;
+
+        }
+
+
+        .header h1 {
+
+            margin: 0;
+
+            font-size: 24px;
+
+        }
+
+
+        .back-button {
+
+            background: white;
+
+            color: #16351f;
+
+            border: none;
+
+            padding: 9px 15px;
+
+            border-radius: 7px;
+
+            cursor: pointer;
+
+        }
+
+
+        /* ==============================
+           MAP
+        ============================== */
+
+        #map {
+
+            width: 100%;
+
+            height: calc(100vh - 65px);
+
+        }
+
+
+        /* ==============================
+           INFO PANEL
+        ============================== */
+
+        .info-panel {
+
+            position: absolute;
+
+            top: 80px;
+
+            right: 15px;
+
+            z-index: 1000;
+
+            background: white;
+
+            padding: 18px;
+
+            width: 300px;
+
+            border-radius: 12px;
+
+            box-shadow:
+                0 3px 15px
+                rgba(0,0,0,0.25);
+
+        }
+
+
+        .info-panel h2 {
+
+            margin-top: 0;
+
+            font-size: 19px;
+
+        }
+
+
+        .info-panel p {
+
+            margin: 8px 0;
+
+        }
+
+
+        .note {
+
+            font-size: 12px;
+
+            color: #666;
+
+        }
+
+
+        /* ==============================
+           LEGEND
+        ============================== */
+
+        .legend {
+
+            background: white;
+
+            padding: 12px;
+
+            border-radius: 8px;
+
+            box-shadow:
+                0 2px 8px
+                rgba(0,0,0,0.25);
+
+            line-height: 1.7;
+
+        }
+
+
+        .legend-title {
+
+            font-weight: bold;
+
+            margin-bottom: 5px;
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- =================================
+         HEADER
+    ================================== -->
+
+    <div class="header">
+
+        <h1>
+            🌍 ClimateGuard Hazard Map
+        </h1>
+
+
+        <button
+            class="back-button"
+            onclick="goBack()">
+
+            ← Back to Analysis
+
+        </button>
+
+    </div>
+
+
+    <!-- =================================
+         INFORMATION PANEL
+    ================================== -->
+
+    <div
+        id="infoPanel"
+        class="info-panel">
+
+        Loading analysis...
+
+    </div>
+
+
+    <!-- =================================
+         MAP
+    ================================== -->
+
+    <div id="map"></div>
+
+
+    <!-- Leaflet -->
+
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
+
+
+    <script>
+
+
+        // ==================================================
+        // LOAD SAVED CLIMATEGUARD ANALYSIS
+        // ==================================================
+
+        const savedData =
+            localStorage.getItem(
+                "climateguardAnalysis"
+            );
+
+
+        let analysis = null;
+
+
+        if (savedData) {
+
+            try {
+
+                analysis =
+                    JSON.parse(savedData);
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Error reading saved analysis:",
+                    error
+                );
+
+            }
+
+        }
+
+
+        // ==================================================
+        // CREATE MAP
+        // ==================================================
+
+        let map;
+
+
+        if (analysis) {
+
+            map = L.map("map").setView(
+
+                [
+
+                    analysis.latitude,
+
+                    analysis.longitude
+
+                ],
+
+                5
+
+            );
+
+        }
+
+        else {
+
+            map = L.map("map").setView(
+
+                [20, 0],
+
+                2
+
+            );
+
+        }
+
+
+        // ==================================================
+        // OPEN STREET MAP
+        // ==================================================
+
+        L.tileLayer(
+
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+
+            {
+
+                attribution:
+                    "&copy; OpenStreetMap contributors"
+
+            }
+
+        ).addTo(map);
+
+
+        // ==================================================
+        // USER LOCATION
+        // ==================================================
+
+        let userMarker;
+
+
+        if (analysis) {
+
+
+            userMarker = L.marker(
+
+                [
+
+                    analysis.latitude,
+
+                    analysis.longitude
+
+                ]
+
+            ).addTo(map);
+
+
+            userMarker.bindPopup(
+
+                "<b>📍 Your Location</b>" +
+
+                "<br><br>" +
+
+                "Latitude: " +
+
+                analysis.latitude +
+
+                "<br>" +
+
+                "Longitude: " +
+
+                analysis.longitude
+
+            );
+
+        }
+
+
+        // ==================================================
+        // USER'S AFFECTED AREA
+        // ==================================================
+
+        let userAffectedCircle;
+
+
+        if (analysis) {
+
+
+            const affected =
+                analysis.affected_area;
+
+
+            const centerLatitude =
+                Number(
+                    affected.center_latitude
+                );
+
+
+            const centerLongitude =
+                Number(
+                    affected.center_longitude
+                );
+
+
+            const radiusKm =
+                Number(
+                    affected.radius_km
+                );
+
+
+            userAffectedCircle =
+                L.circle(
+
+                    [
+
+                        centerLatitude,
+
+                        centerLongitude
+
+                    ],
+
+                    {
+
+                        radius:
+                            radiusKm * 1000,
+
+                        color:
+                            "#d71920",
+
+                        weight:
+                            4,
+
+                        opacity:
+                            1,
+
+                        fillColor:
+                            "#ff3333",
+
+                        fillOpacity:
+                            0.25
+
+                    }
+
+                ).addTo(map);
+
+
+            userAffectedCircle.bindPopup(
+
+                "<b>🔴 Your Affected Area</b>" +
+
+                "<br><br>" +
+
+                "<b>Hazard:</b> " +
+
+                affected.hazard +
+
+                "<br>" +
+
+                "<b>Risk:</b> " +
+
+                affected.risk +
+
+                "<br>" +
+
+                "<b>Radius:</b> " +
+
+                radiusKm +
+
+                " km"
+
+            );
+
+        }
+
+
+        // ==================================================
+        // HAZARD ICON
+        // ==================================================
+
+        function getHazardIcon(
+            category
+        ) {
+
+
+            category =
+                category.toLowerCase();
+
+
+            let emoji =
+                "⚠️";
+
+
+            if (
+                category.includes(
+                    "wildfire"
+                )
+            ) {
+
+                emoji =
+                    "🔥";
+
+            }
+
+            else if (
+                category.includes(
+                    "storm"
+                )
+            ) {
+
+                emoji =
+                    "🌪️";
+
+            }
+
+            else if (
+                category.includes(
+                    "volcano"
+                )
+            ) {
+
+                emoji =
+                    "🌋";
+
+            }
+
+            else if (
+                category.includes(
+                    "flood"
+                )
+            ) {
+
+                emoji =
+                    "🌊";
+
+            }
+
+            else if (
+                category.includes(
+                    "earthquake"
+                )
+            ) {
+
+                emoji =
+                    "🌎";
+
+            }
+
+            else if (
+                category.includes(
+                    "avalanche"
+                )
+            ) {
+
+                emoji =
+                    "❄️";
+
+            }
+
+            else if (
+                category.includes(
+                    "dust"
+                )
+            ) {
+
+                emoji =
+                    "🌫️";
+
+            }
+
+            else if (
+                category.includes(
+                    "sea"
+                )
+            ) {
+
+                emoji =
+                    "🌊";
+
+            }
+
+
+            return L.divIcon({
+
+                className: "",
+
+                html:
+
+                    "<div style='" +
+
+                    "font-size:25px;" +
+
+                    "text-align:center;" +
+
+                    "text-shadow:0 0 3px white;" +
+
+                    "'>" +
+
+                    emoji +
+
+                    "</div>",
+
+                iconSize: [
+                    30,
+                    30
+                ],
+
+                iconAnchor: [
+                    15,
+                    15
+                ]
+
+            });
+
+        }
+
+
+        // ==================================================
+        // GET APPROXIMATE IMPACT RADIUS
+        // ==================================================
+
+        function getImpactRadius(
+            category
+        ) {
+
+
+            const text =
+                category.toLowerCase();
+
+
+            /*
+             * These are PROTOTYPE
+             * visualization radii.
+             *
+             * They are NOT official
+             * emergency boundaries.
+             */
+
+
+            if (
+                text.includes(
+                    "wildfire"
+                )
+            ) {
+
+                return 50;
+
+            }
+
+
+            if (
+                text.includes(
+                    "severe storm"
+                )
+            ) {
+
+                return 500;
+
+            }
+
+
+            if (
+                text.includes(
+                    "storm"
+                )
+            ) {
+
+                return 300;
+
+            }
+
+
+            if (
+                text.includes(
+                    "volcano"
+                )
+            ) {
+
+                return 100;
+
+            }
+
+
+            if (
+                text.includes(
+                    "sea"
+                )
+            ) {
+
+                return 500;
+
+            }
+
+
+            if (
+                text.includes(
+                    "flood"
+                )
+            ) {
+
+                return 50;
+
+            }
+
+
+            if (
+                text.includes(
+                    "earthquake"
+                )
+            ) {
+
+                return 100;
+
+            }
+
+
+            if (
+                text.includes(
+                    "avalanche"
+                )
+            ) {
+
+                return 30;
+
+            }
+
+
+            if (
+                text.includes(
+                    "dust"
+                )
+            ) {
+
+                return 200;
+
+            }
+
+
+            return 100;
+
+        }
+
+
+        // ==================================================
+        // GET REGION COLOR
+        // ==================================================
+
+        function getRegionColor(
+            category
+        ) {
+
+
+            const text =
+                category.toLowerCase();
+
+
+            if (
+                text.includes(
+                    "wildfire"
+                )
+            ) {
+
+                return "#ff3b30";
+
+            }
+
+
+            if (
+                text.includes(
+                    "storm"
+                )
+            ) {
+
+                return "#8e44ad";
+
+            }
+
+
+            if (
+                text.includes(
+                    "volcano"
+                )
+            ) {
+
+                return "#8b4513";
+
+            }
+
+
+            if (
+                text.includes(
+                    "flood"
+                )
+            ) {
+
+                return "#007aff";
+
+            }
+
+
+            if (
+                text.includes(
+                    "earthquake"
+                )
+            ) {
+
+                return "#ff9500";
+
+            }
+
+
+            if (
+                text.includes(
+                    "avalanche"
+                )
+            ) {
+
+                return "#5dade2";
+
+            }
+
+
+            if (
+                text.includes(
+                    "dust"
+                )
+            ) {
+
+                return "#c49a6c";
+
+            }
+
+
+            if (
+                text.includes(
+                    "sea"
+                )
+            ) {
+
+                return "#00a8cc";
+
+            }
+
+
+            return "#ffcc00";
+
+        }
+
+
+        // ==================================================
+        // LOAD GLOBAL NASA HAZARDS
+        // ==================================================
+
+        fetch(
+
+            "https://eonet.gsfc.nasa.gov/api/v3/events?status=open&limit=100"
+
+        )
+
+        .then(
+
+            response => {
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "NASA EONET request failed."
+                    );
+
+                }
+
+                return response.json();
+
+            }
+
+        )
+
+        .then(
+
+            data => {
+
+
+                data.events.forEach(
+
+                    function(event) {
+
+
+                        // ----------------------------------
+                        // EVENT GEOMETRY
+                        // ----------------------------------
+
+                        const geometry =
+                            event.geometry;
+
+
+                        if (
+                            !geometry ||
+                            geometry.length === 0
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        const coordinates =
+
+                            geometry[
+                                geometry.length - 1
+                            ].coordinates;
+
+
+                        if (
+                            !coordinates ||
+                            coordinates.length < 2
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        const longitude =
+                            Number(
+                                coordinates[0]
+                            );
+
+
+                        const latitude =
+                            Number(
+                                coordinates[1]
+                            );
+
+
+                        // ----------------------------------
+                        // CATEGORY
+                        // ----------------------------------
+
+                        let category =
+                            "Unknown";
+
+
+                        if (
+
+                            event.categories &&
+
+                            event.categories.length > 0
+
+                        ) {
+
+                            category =
+                                event.categories[0]
+                                    .title;
+
+                        }
+
+
+                        // ----------------------------------
+                        // ICON
+                        // ----------------------------------
+
+                        const marker =
+                            L.marker(
+
+                                [
+
+                                    latitude,
+
+                                    longitude
+
+                                ],
+
+                                {
+
+                                    icon:
+                                        getHazardIcon(
+                                            category
+                                        )
+
+                                }
+
+                            ).addTo(map);
+
+
+                        // ----------------------------------
+                        // IMPACT RADIUS
+                        // ----------------------------------
+
+                        const impactRadius =
+                            getImpactRadius(
+                                category
+                            );
+
+
+                        // ----------------------------------
+                        // REGION COLOR
+                        // ----------------------------------
+
+                        const regionColor =
+                            getRegionColor(
+                                category
+                            );
+
+
+                        // ----------------------------------
+                        // CREATE AFFECTED REGION
+                        // ----------------------------------
+
+                        const impactCircle =
+                            L.circle(
+
+                                [
+
+                                    latitude,
+
+                                    longitude
+
+                                ],
+
+                                {
+
+                                    radius:
+                                        impactRadius *
+                                        1000,
+
+                                    color:
+                                        regionColor,
+
+                                    weight:
+                                        2,
+
+                                    opacity:
+                                        0.9,
+
+                                    fillColor:
+                                        regionColor,
+
+                                    fillOpacity:
+                                        0.15
+
+                                }
+
+                            ).addTo(map);
+
+
+                        // ----------------------------------
+                        // MARKER POPUP
+                        // ----------------------------------
+
+                        marker.bindPopup(
+
+                            "<div style='min-width:230px'>" +
+
+                            "<h3>🚨 " +
+
+                            event.title +
+
+                            "</h3>" +
+
+                            "<b>Category:</b> " +
+
+                            category +
+
+                            "<br><br>" +
+
+                            "<b>Estimated Impact Zone:</b> " +
+
+                            impactRadius +
+
+                            " km" +
+
+                            "<br><br>" +
+
+                            "<b>Latitude:</b> " +
+
+                            latitude +
+
+                            "<br>" +
+
+                            "<b>Longitude:</b> " +
+
+                            longitude +
+
+                            "<br><br>" +
+
+                            "<b>Source:</b> " +
+
+                            "NASA EONET" +
+
+                            "<br><br>" +
+
+                            "<small>" +
+
+                            "Impact zone is a prototype " +
+
+                            "estimate, not an official " +
+
+                            "emergency boundary." +
+
+                            "</small>" +
+
+                            "</div>"
+
+                        );
+
+
+                        // ----------------------------------
+                        // CIRCLE POPUP
+                        // ----------------------------------
+
+                        impactCircle.bindPopup(
+
+                            "<b>🌍 Hazard Impact Region</b>" +
+
+                            "<br><br>" +
+
+                            "<b>Hazard:</b> " +
+
+                            category +
+
+                            "<br>" +
+
+                            "<b>Event:</b> " +
+
+                            event.title +
+
+                            "<br>" +
+
+                            "<b>Estimated Radius:</b> " +
+
+                            impactRadius +
+
+                            " km" +
+
+                            "<br><br>" +
+
+                            "<small>" +
+
+                            "Prototype visualization based " +
+
+                            "on hazard category." +
+
+                            "</small>"
+
+                        );
+
+                    }
+
+                );
+
+
+                // ------------------------------------------
+                // KEEP USER AREA ABOVE NASA REGIONS
+                // ------------------------------------------
+
+                if (userAffectedCircle) {
+
+                    userAffectedCircle.bringToFront();
+
+                }
+
+            }
+
+        )
+
+        .catch(
+
+            function(error) {
+
+                console.error(
+                    "NASA hazard error:",
+                    error
+                );
+
+            }
+
+        );
+
+
+        // ==================================================
+        // INFORMATION PANEL
+        // ==================================================
+
+        if (analysis) {
+
+
+            const affected =
+                analysis.affected_area;
+
+
+            const people =
+                analysis.people_at_risk;
+
+
+            const climate =
+                analysis.climate_risk;
+
+
+            document.getElementById(
+                "infoPanel"
+            ).innerHTML =
+
+                "<h2>" +
+
+                "📍 Your Risk Analysis" +
+
+                "</h2>" +
+
+                "<p>" +
+
+                "<b>Hazard:</b> " +
+
+                affected.hazard +
+
+                "</p>" +
+
+                "<p>" +
+
+                "<b>Risk:</b> " +
+
+                affected.risk +
+
+                "</p>" +
+
+                "<p>" +
+
+                "<b>Your Affected Radius:</b> " +
+
+                affected.radius_km +
+
+                " km" +
+
+                "</p>" +
+
+                "<p>" +
+
+                "<b>Population:</b> " +
+
+                people.total_population
+                    .toLocaleString() +
+
+                "</p>" +
+
+                "<p>" +
+
+                "<b>Potentially Exposed:</b> " +
+
+                people.people_at_risk
+                    .toLocaleString() +
+
+                "</p>" +
+
+                "<p>" +
+
+                "<b>Climate Risk:</b> " +
+
+                climate.score +
+
+                " / 100" +
+
+                "</p>" +
+
+                "<p>" +
+
+                "<b>Overall Risk:</b> " +
+
+                analysis.overall_risk +
+
+                "</p>" +
+
+                "<p class='note'>" +
+
+                "📍 Your location<br>" +
+
+                "🔴 Your affected area<br>" +
+
+                "🌍 Colored circles = global hazard impact zones" +
+
+                "</p>";
+
+        }
+
+        else {
+
+
+            document.getElementById(
+                "infoPanel"
+            ).innerHTML =
+
+                "<h2>🌍 Global Hazard Map</h2>" +
+
+                "<p>" +
+
+                "No local analysis found."
+
+                + "</p>";
+
+        }
+
+
+        // ==================================================
+        // LEGEND
+        // ==================================================
+
+        const legend =
+            L.control({
+
+                position:
+                    "bottomright"
+
+            });
+
+
+        legend.onAdd =
+            function() {
+
+
+                const div =
+                    L.DomUtil.create(
+                        "div",
+                        "legend"
+                    );
+
+
+                div.innerHTML =
+
+                    "<div class='legend-title'>" +
+
+                    "🗺️ Map Legend" +
+
+                    "</div>" +
+
+                    "📍 Your Location<br>" +
+
+                    "🔴 Your Affected Area<br>" +
+
+                    "🔥 Wildfire + Impact Zone<br>" +
+
+                    "🌪️ Storm + Impact Zone<br>" +
+
+                    "🌋 Volcano + Impact Zone<br>" +
+
+                    "🌊 Flood + Impact Zone<br>" +
+
+                    "🌎 Earthquake + Impact Zone<br>" +
+
+                    "❄️ Avalanche + Impact Zone<br>" +
+
+                    "⚠️ Other Hazard + Impact Zone";
+
+
+                return div;
+
+            };
+
+
+        legend.addTo(map);
+
+
+        // ==================================================
+        // BACK
+        // ==================================================
+
+        function goBack() {
+
+            window.location.href = "/";
+
+        }
+
+
+    </script>
+
+
+</body>
+
+</html>
