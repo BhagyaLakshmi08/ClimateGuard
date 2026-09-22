@@ -1,52 +1,102 @@
-from services.population_service import (
-    get_population_in_area
+from hazards.affected_area import (
+    get_dominant_hazard,
+    get_affected_area
 )
 
 
-# Test location
-latitude = 16.4578548
-longitude = 80.5344060
+# Test hazard data
+
+weather_risks = [
+
+    {
+        "hazard": "Heat",
+        "risk": "LOW"
+    },
+
+    {
+        "hazard": "Strong Wind",
+        "risk": "LOW"
+    },
+
+    {
+        "hazard": "Heavy Rain",
+        "risk": "LOW"
+    },
+
+    {
+        "hazard": "Thunderstorm",
+        "risk": "LOW"
+    }
+
+]
 
 
-# Test affected-area radius
-radius = 5
+flood_risk = {
+
+    "hazard": "Flood",
+
+    "risk": "LOW"
+
+}
 
 
-population_data = get_population_in_area(
-    latitude,
-    longitude,
-    radius
+# Find dominant hazard
+
+dominant = get_dominant_hazard(
+
+    weather_risks,
+
+    flood_risk
+
+)
+
+
+# Create affected area
+
+affected_area = get_affected_area(
+
+    16.4578548,
+
+    80.5344060,
+
+    dominant["hazard"],
+
+    dominant["risk"]
+
 )
 
 
 print("\n======================================")
-print("CLIMATEGUARD POPULATION ANALYSIS")
+
+print(
+    "CLIMATEGUARD AFFECTED AREA"
+)
+
 print("======================================")
 
 
 print(
-    "Location:",
-    population_data["latitude"],
-    population_data["longitude"]
+    "Dominant Hazard:",
+    dominant["hazard"]
+)
+
+
+print(
+    "Risk Level:",
+    dominant["risk"]
 )
 
 
 print(
     "Affected Radius:",
-    population_data["radius_km"],
+    affected_area["radius_km"],
     "km"
 )
 
 
 print(
-    "Population Data Year:",
-    population_data["data_year"]
-)
-
-
-print(
-    "Estimated People in Area:",
-    population_data["population"]
+    "Source:",
+    affected_area["source"]
 )
 
 
