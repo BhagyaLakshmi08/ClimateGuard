@@ -49,6 +49,7 @@ output_path = "output/vehicle_tracking.mp4"
 
 fourcc = cv2.VideoWriter_fourcc(*"mp4v")
 
+# We process every 2nd frame, so adjust output FPS
 output = cv2.VideoWriter(
     output_path,
     fourcc,
@@ -59,18 +60,18 @@ output = cv2.VideoWriter(
 
 # -------------------------------------------------
 # VEHICLE CLASSES
-# COCO:
-# 2 = car
-# 3 = motorcycle
-# 5 = bus
-# 7 = truck
 # -------------------------------------------------
 
 vehicle_classes = [2, 3, 5, 7]
 
+# 2 = Car
+# 3 = Motorcycle
+# 5 = Bus
+# 7 = Truck
+
 
 # -------------------------------------------------
-# PROCESSING
+# PROCESSING SETTINGS
 # -------------------------------------------------
 
 frame_count = 0
@@ -80,8 +81,13 @@ PROCESS_EVERY_N_FRAMES = 2
 
 print()
 print("Vehicle detection and tracking started.")
-print("Press Q to stop.")
+print("GUI display disabled.")
+print("Processing video...")
 
+
+# -------------------------------------------------
+# PROCESS VIDEO
+# -------------------------------------------------
 
 while True:
 
@@ -144,15 +150,13 @@ while True:
                 continue
 
 
-            # -------------------------------------------------
-            # CLASS
-            # -------------------------------------------------
-
+            # Class ID
             class_id = int(
                 box.cls[0]
             )
 
 
+            # Vehicle names
             names = {
                 2: "Car",
                 3: "Motorcycle",
@@ -196,7 +200,7 @@ while True:
 
 
             # -------------------------------------------------
-            # LABEL
+            # DRAW LABEL
             # -------------------------------------------------
 
             label = (
@@ -218,7 +222,7 @@ while True:
 
 
     # -------------------------------------------------
-    # FRAME INFORMATION
+    # FRAME NUMBER
     # -------------------------------------------------
 
     cv2.putText(
@@ -233,24 +237,21 @@ while True:
 
 
     # -------------------------------------------------
-    # SAVE
+    # SAVE FRAME
     # -------------------------------------------------
 
     output.write(frame)
 
 
     # -------------------------------------------------
-    # DISPLAY
+    # PROGRESS
     # -------------------------------------------------
 
-    cv2.imshow(
-        "Vehicle Detection and Tracking",
-        frame
-    )
+    if frame_count % 20 == 0:
 
-
-    if cv2.waitKey(1) & 0xFF == ord("q"):
-        break
+        print(
+            f"Processed frame: {frame_count}"
+        )
 
 
 # -------------------------------------------------
@@ -259,7 +260,6 @@ while True:
 
 video.release()
 output.release()
-cv2.destroyAllWindows()
 
 
 print()
@@ -268,6 +268,11 @@ print("PROCESSING FINISHED")
 print("--------------------------------")
 
 print(
-    "Output saved:",
+    "Processed frames:",
+    frame_count
+)
+
+print(
+    "Output saved to:",
     output_path
 )
